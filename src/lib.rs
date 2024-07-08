@@ -1,14 +1,41 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+use bevy::prelude::*;
+
+mod rig;
+
+mod commands;
+pub use commands::OgleCommandExt;
+
+mod plugin;
+pub use plugin::OglePlugin;
+
+#[derive(Resource, Debug)]
+pub enum OgleTarget {
+    Position(Vec2),
+    Entity(Entity),
+    None,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+impl Default for OgleTarget {
+    fn default() -> Self {
+        Self::Position(Vec2 { x: 0.0, y: 0.0 })
     }
+}
+
+#[derive(States, Clone, PartialEq, Eq, Hash, Debug, Default)]
+pub enum OgleMode {
+    /// The camera will not move under normal circumstances.
+    #[default]
+    Frozen,
+    /// The camera should exponentially follow its target.
+    Following,
+    /// The camera is being choreographed and should mirror its target position exactly.
+    ///
+    /// This is useful when the camera follows a spline, or you don't want loose following behavior.
+    Choreographed,
+    /// The camera is in a detached pancam mode.
+    Pancam,
+}
+
+pub mod prelude {
+    pub use super::{OgleCommandExt, OgleMode, OgleTarget};
 }

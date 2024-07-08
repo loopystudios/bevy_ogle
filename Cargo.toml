@@ -1,10 +1,20 @@
-[package]
-name = "bevy_ogle"
+[workspace]
+resolver = "2"
+members = ["examples/run_wasm", "examples/simple"]
+
+[workspace.package]
 edition = "2021"
 version = "0.1.0"
 license = "MIT OR Apache-2.0"
-description = "A multi-mode camera library for 2d games"
 repository = "https://github.com/loopystudios/bevy_ogle"
+
+[package]
+name = "bevy_ogle"
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+repository.workspace = true
+description = "A multi-mode camera library for 2d games"
 authors = ["Spencer C. Imbleau"]
 keywords = ["bevy"]
 categories = ["game-development", "wasm"]
@@ -12,10 +22,21 @@ readme = "README.md"
 
 [lib]
 
+
+[workspace.dependencies]
+bevy = { version = "0.14.0", default-features = false }
+
 [dependencies]
-bevy = { version = "0.14", default-features = false }
-bevy_pancam = "0.11.1"
+bevy = { workspace = true, default-features = false, features = [
+  "bevy_state",
+  "bevy_core_pipeline",
+] }
+bevy_pancam = { git = "https://github.com/tomara-x/bevy_pancam", features = [
+  "bevy_egui",
+] }
+#bevy_pancam = "0.12.0"
 dolly = "0.5.0"
+mint = "0.5.8"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.42"
