@@ -8,7 +8,7 @@ pub use commands::OgleCommandExt;
 mod plugin;
 pub use plugin::OglePlugin;
 
-#[derive(Resource, Debug)]
+#[derive(Resource, Debug, PartialEq)]
 pub enum OgleTarget {
     Position(Vec2),
     Entity(Entity),
@@ -17,7 +17,7 @@ pub enum OgleTarget {
 
 impl Default for OgleTarget {
     fn default() -> Self {
-        Self::Position(Vec2 { x: 0.0, y: 0.0 })
+        Self::None
     }
 }
 

@@ -1,4 +1,6 @@
-use bevy::{color::palettes::css, prelude::*};
+use std::ops::Deref;
+
+use bevy::{color::palettes::css, prelude::*, transform::commands};
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_ogle::{prelude::*, OglePlugin};
 use rand::random;
@@ -11,42 +13,40 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
         .add_plugins(OglePlugin)
-        .add_systems(Startup, setup_background)
+        .add_systems(Startup, setup_scene)
         .add_systems(Startup, |mut commands: Commands| {
             commands.spawn(Camera2dBundle::default());
-            // Create target, begin following it.
-            let entity = commands
-                .spawn((ThingToFollow, SpatialBundle::default()))
-                .id();
-            commands.ogle_change_mode(OgleMode::Frozen);
-            commands.ogle_target_entity(entity);
         })
         .add_systems(Update, move_target)
         .add_systems(Update, control_camera_ui)
         .run();
 }
 
-fn setup_background(mut commands: Commands) {
-    let n = 20;
-    let spacing = 50.;
-    let offset = spacing * n as f32 / 2.;
-    let custom_size = Some(Vec2::new(spacing, spacing));
-    for x in 0..n {
-        for y in 0..n {
-            let x = x as f32 * spacing - offset;
-            let y = y as f32 * spacing - offset;
-            let color = Color::hsl(240., random::<f32>() * 0.3, random::<f32>() * 0.3);
-            commands.spawn(SpriteBundle {
-                sprite: Sprite {
-                    color,
-                    custom_size,
-                    ..default()
-                },
-                transform: Transform::from_xyz(x, y, 0.),
+fn setup_scene(mut commands: Commands) {
+    // Background
+    commands.spawn(SpriteBundle {
+        sprite: Sprite {
+            color: css::LIME.into(),
+            custom_size: Some(Vec2::new(500.0, 500.0)),
+            ..default()
+        },
+        transform: Transform::from_xyz(0.0, 0.0, 0.),
+        ..default()
+    });
+
+    // Moving thing for the camera to follow
+    commands.spawn((
+        ThingToFollow,
+        SpriteBundle {
+            sprite: Sprite {
+                color: css::RED.into(),
+                custom_size: Some(Vec2::new(5.0, 5.0)),
                 ..default()
-            });
-        }
-    }
+            },
+            transform: Transform::from_xyz(0.0, 0.0, 0.),
+            ..default()
+        },
+    ));
 }
 
 fn move_target(
@@ -61,8 +61,10 @@ fn move_target(
 }
 
 fn control_camera_ui(
+    mut commands: Commands,
     mut contexts: EguiContexts,
     query_thing: Query<Entity, With<ThingToFollow>>,
+    target: Res<OgleTarget>,
     mode: Res<State<OgleMode>>,
     mut next_mode: ResMut<NextState<OgleMode>>,
 ) {
@@ -71,6 +73,7 @@ fn control_camera_ui(
         .resizable(false)
         .title_bar(true);
     window.show(contexts.ctx_mut(), |ui| {
+        ui.heading("Mode");
         let mut set_mode = mode.clone();
         if ui
             .radio_value(&mut set_mode, OgleMode::Frozen, "Frozen")
@@ -86,6 +89,19 @@ fn control_camera_ui(
                 .clicked()
         {
             next_mode.set(set_mode);
+        }
+
+        ui.separator();
+        ui.heading("Mode");
+        let target_entity = query_thing.single();
+        if ui.radio(*target == OgleTarget::None, "None").clicked() {
+            commands.ogle_clear_target();
+        }
+        if ui
+            .radio(*target == OgleTarget::Entity(target_entity), "Entity")
+            .clicked()
+        {
+            commands.ogle_target_entity(target_entity);
         }
     });
 }

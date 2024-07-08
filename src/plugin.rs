@@ -4,8 +4,8 @@ use bevy_pancam::{PanCam, PanCamPlugin};
 use dolly::prelude::*;
 
 // TODO: These should be configurable and play well with pancam
-const MIN_ZOOM: f32 = 0.01;
-const MAX_ZOOM: f32 = 3.0;
+const MIN_ZOOM: f32 = -0.99;
+const MAX_ZOOM: f32 = 1000.0;
 const ZOOM_SPEED: f32 = 2.0;
 
 #[derive(Default)]
@@ -24,7 +24,9 @@ impl Plugin for OglePlugin {
                 choreograph_target.run_if(in_state(OgleMode::Choreographed)),
             )
             .add_systems(OnEnter(OgleMode::Pancam), on_enter_pancam)
-            .add_systems(OnExit(OgleMode::Pancam), on_exit_pancam);
+            .add_systems(OnExit(OgleMode::Pancam), on_exit_pancam)
+            .add_systems(OnEnter(OgleMode::Following), on_enter_following)
+            .add_systems(OnExit(OgleMode::Following), on_exit_following);
     }
 }
 
@@ -47,6 +49,14 @@ fn on_exit_pancam(mut query: Query<&mut PanCam>) {
 
 fn choreograph_target() {
     todo!("handle camera choreographs, like following a spline")
+}
+
+fn on_enter_following() {
+    info!("Enabling following");
+}
+
+fn on_exit_following() {
+    info!("Disabling following");
 }
 
 fn follow_target(
@@ -72,7 +82,7 @@ fn follow_target(
             rig.driver_mut::<Position>().position = mint::Point3 {
                 x: pos.x,
                 y: pos.y,
-                z: 0.0,
+                z: 1.0,
             };
         }
         OgleTarget::Entity(e) => {
@@ -83,7 +93,7 @@ fn follow_target(
             rig.driver_mut::<Position>().position = mint::Point3 {
                 x: transform.translation.x,
                 y: transform.translation.y,
-                z: 0.0,
+                z: 1.0,
             };
         }
         OgleTarget::None => {}
