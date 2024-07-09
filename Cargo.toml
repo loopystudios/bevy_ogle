@@ -31,7 +31,7 @@ bevy = { workspace = true, default-features = false, features = [
   "bevy_state",
   "bevy_core_pipeline",
 ] }
-bevy_pancam = { git = "https://github.com/tomara-x/bevy_pancam", features = [
+bevy_pancam = { git = "https://github.com/johanhelsing/bevy_pancam", features = [
   "bevy_egui",
 ] }
 #bevy_pancam = "0.12.0"

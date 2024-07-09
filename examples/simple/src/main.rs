@@ -1,6 +1,4 @@
-use std::ops::Deref;
-
-use bevy::{color::palettes::css, prelude::*, transform::commands};
+use bevy::{color::palettes::css, prelude::*};
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_ogle::{prelude::*, OglePlugin};
 use rand::random;
@@ -12,11 +10,8 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
-        .add_plugins(OglePlugin)
+        .add_plugins(OglePlugin::default())
         .add_systems(Startup, setup_scene)
-        .add_systems(Startup, |mut commands: Commands| {
-            commands.spawn(Camera2dBundle::default());
-        })
         .add_systems(Update, move_target)
         .add_systems(Update, control_camera_ui)
         .run();
@@ -82,9 +77,6 @@ fn control_camera_ui(
                 .radio_value(&mut set_mode, OgleMode::Following, "Following")
                 .clicked()
             || ui
-                .radio_value(&mut set_mode, OgleMode::Choreographed, "Choreographed")
-                .clicked()
-            || ui
                 .radio_value(&mut set_mode, OgleMode::Pancam, "Pancam")
                 .clicked()
         {
@@ -92,7 +84,7 @@ fn control_camera_ui(
         }
 
         ui.separator();
-        ui.heading("Mode");
+        ui.heading("Camera Target");
         let target_entity = query_thing.single();
         if ui.radio(*target == OgleTarget::None, "None").clicked() {
             commands.ogle_clear_target();
@@ -103,5 +95,25 @@ fn control_camera_ui(
         {
             commands.ogle_target_entity(target_entity);
         }
+        ui.horizontal(|ui| {
+            let mut pos = match *target {
+                OgleTarget::Position(p) => p,
+                _ => Vec2::new(0.0, 0.0),
+            };
+            if ui
+                .radio(matches!(*target, OgleTarget::Position(_)), "Position")
+                .clicked()
+            {
+                commands.ogle_target_position(pos);
+            }
+            ui.label("X");
+            if ui.add(egui::DragValue::new(&mut pos.x)).changed() {
+                commands.ogle_target_position(pos);
+            }
+            ui.label("Y");
+            if ui.add(egui::DragValue::new(&mut pos.y)).changed() {
+                commands.ogle_target_position(pos);
+            }
+        });
     });
 }
