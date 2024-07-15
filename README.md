@@ -10,10 +10,10 @@
 [![Discord](https://img.shields.io/discord/913957940560531456.svg?label=Loopy&logo=discord&logoColor=ffffff&color=ffffff&labelColor=000000)](https://discord.gg/zrjnQzdjCB)
 [![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](#license)
 [![Following released Bevy versions](https://img.shields.io/badge/bevy%20tracking-released%20version-lightblue)](https://bevyengine.org/learn/quick-start/plugin-development/#main-branch-tracking)\
-[![Dependency status](https://deps.rs/repo/github/linebender/bevy_ogle/status.svg)](https://deps.rs/repo/github/linebender/bevy_ogle)
+[![Dependency status](https://deps.rs/repo/github/loopystudios/bevy_ogle/status.svg)](https://deps.rs/repo/github/loopystudios/bevy_ogle)
 [![Crates.io](https://img.shields.io/crates/v/bevy_ogle.svg)](https://crates.io/crates/bevy_ogle)
 [![Docs](https://img.shields.io/docsrs/bevy_ogle)](https://docs.rs/bevy_ogle)
-[![Build status](https://github.com/linebender/bevy_ogle/workflows/CI/badge.svg)](https://github.com/linebender/bevy_ogle/actions)
+[![Build status](https://github.com/loopystudios/bevy_ogle/workflows/CI/badge.svg)](https://github.com/loopystudios/bevy_ogle/actions)
 
 </div>
 
@@ -40,39 +40,29 @@ You can also run examples on web:
 # Make sure the Rust toolchain supports the wasm32 target
 rustup target add wasm32-unknown-unknown
 
-cargo run_wasm --example simple
+cargo run_wasm -p demo
 ```
 
-### Switch focus
+### Camera Modes
 
-You can move the camera to a focus on a specific position
+The camera currently supports 3 modes, easily switched through commands.
 
 ```rust
-pub fn startup(commands: Commands) {
-      commands.ogle_at(Vec2::new(0.0, 0.0));
-}
+commands.ogle_mode(OgleMode::Frozen); // No camera system will be run. "User is in the menu"
+commands.ogle_mode(OgleMode::Follow); // Camera will follow a target.
+commands.ogle_mode(OgleMode::Pancam); // Camera is a debug camera controlled by the user.
 ```
 
-### Follow an entity
+### Camera Target
 
-You can switch the camera focus to any entity. The entity must have a `Transform`, or nothing will occur.
+Exclusively when the camera is in `OgleMode::Follow`, the camera will follow a target.
 
-```rust
-pub fn follow_player(commands: Commands, new_player: Query<Entity, Added<PlayerTag>>) {
-    for entity in new_player.iter() {
-      commands.ogle_follow(entity);
-    }
-}
-```
-
-### Change modes
-
-You can switch camera modes easily.
+There are several ways to set the target:
 
 ```rust
-commands.ogle_mode(OgleMode::Follow); // Camera will follow entities
-commands.ogle_mode(OgleMode::Stationary); // Camera will not follow entities
-commands.ogle_mode(OgleMode::Pancam); // Camera is only controlled through user input
+commands.ogle_clear_target(); // Clear the target - No following is observed.
+commands.ogle_target_position(Vec2::new(0.0, 0.0)); // Camera looks at a position target.
+commands.ogle_target_entity(target_entity); // Camera follows a target entity (must have a `Transform`).
 ```
 
 ## Community
