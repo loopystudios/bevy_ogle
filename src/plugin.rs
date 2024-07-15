@@ -10,7 +10,7 @@ use dolly::prelude::*;
 
 #[derive(Default)]
 pub struct OglePlugin {
-    pub initial_settings: Option<OgleSettings>,
+    pub initial_settings: OgleSettings,
 }
 
 impl Plugin for OglePlugin {
@@ -18,18 +18,14 @@ impl Plugin for OglePlugin {
         app.init_resource::<OgleRig>()
             .init_resource::<OgleTarget>()
             .init_state::<OgleMode>()
-            .insert_resource(self.initial_settings.unwrap_or_default())
+            .insert_resource(self.initial_settings)
             .add_plugins(bevy_pancam::PanCamPlugin)
             .add_systems(Startup, setup)
             .add_systems(
                 Update,
-                (follow_target).run_if(in_state(OgleMode::Following)),
+                ((follow_target, keep_within_settings).chain())
+                    .run_if(in_state(OgleMode::Following)),
             )
-            // TODO: Implement choreographing
-            //.add_systems(
-            //    Update,
-            //    choreograph_target.run_if(in_state(OgleMode::Choreographed)),
-            //)
             .add_systems(OnEnter(OgleMode::Frozen), on_enter_frozen)
             .add_systems(OnExit(OgleMode::Frozen), on_exit_frozen)
             .add_systems(OnEnter(OgleMode::Pancam), on_enter_pancam)
@@ -39,13 +35,18 @@ impl Plugin for OglePlugin {
     }
 }
 
-fn setup(mut commands: Commands) {
-    // TODO: Settings for pancam handled consistently with other ogle settings
+fn setup(mut commands: Commands, settings: Res<OgleSettings>) {
     commands.spawn((
         Camera2dBundle::default(),
-        // Because the default mode of ogle is `OgleMode::Frozen`, not `OgleMode::Pancam`, we need to disable it.
         bevy_pancam::PanCam {
+            // Because the default mode of ogle is `OgleMode::Frozen`, not `OgleMode::Pancam`, we need to disable it.
             enabled: false,
+            min_scale: settings.min_scale,
+            max_scale: settings.max_scale,
+            min_x: settings.min_x,
+            max_x: settings.max_x,
+            min_y: settings.min_y,
+            max_y: settings.max_y,
             ..default()
         },
     ));
@@ -71,20 +72,7 @@ fn on_exit_pancam(mut query: Query<&mut bevy_pancam::PanCam>) {
     pancam.enabled = false;
 }
 
-fn on_enter_following(
-    query_cam: Query<&Transform, With<Camera>>,
-    query_proj: Query<&OrthographicProjection>,
-    mut rig: ResMut<OgleRig>,
-) {
-    let camera_transform = query_cam.single(); // TODO: error handling
-    let projection = query_proj.single();
-
-    rig.driver_mut::<Position>().position = mint::Point3 {
-        x: camera_transform.translation.x,
-        y: camera_transform.translation.y,
-        z: projection.scale,
-    };
-    //rig.driver_mut::<Arm>().offset.z = projection.scale;
+fn on_enter_following() {
     info!("Enabling follow camera");
 }
 
@@ -98,13 +86,12 @@ fn follow_target(
     target: Res<OgleTarget>,
     mut rig: ResMut<OgleRig>,
     query_transform: Query<&Transform, Without<Camera>>,
-    settings: Res<OgleSettings>,
     mut query_cam: Query<(&mut OrthographicProjection, &mut Transform), With<Camera>>,
     mut scroll_events: EventReader<MouseWheel>,
-    primary_window: Query<&Window, With<PrimaryWindow>>,
 ) {
-    // TODO: Handle errors
-    let (mut proj, mut camera_transform) = query_cam.single_mut();
+    let Ok((mut proj, mut camera_transform)) = query_cam.get_single_mut() else {
+        return;
+    };
     let prev_z = rig.driver::<Position>().position.z;
     match *target {
         OgleTarget::Position(pos) => {
@@ -115,14 +102,14 @@ fn follow_target(
             };
         }
         OgleTarget::Entity(e) => {
-            // TODO: Handle errors
-            let transform = query_transform
-                .get(e)
-                .expect("entity target has no transform");
-            rig.driver_mut::<Position>().position = mint::Point3 {
-                x: transform.translation.x,
-                y: transform.translation.y,
-                z: prev_z,
+            if let Ok(transform) = query_transform.get(e) {
+                rig.driver_mut::<Position>().position = mint::Point3 {
+                    x: transform.translation.x,
+                    y: transform.translation.y,
+                    z: prev_z,
+                };
+            } else {
+                error!("entity target has no transform");
             };
         }
         OgleTarget::None => {}
@@ -138,65 +125,92 @@ fn follow_target(
         .sum::<f32>();
 
     if scroll != 0. {
-        let window = primary_window.single();
-        let window_size = Vec2::new(window.width(), window.height());
-
-        let old_scale = rig.driver::<Arm>().offset.z;
-        let mut new_scale = (old_scale * (1. + -scroll * 0.001)).max(settings.min_scale);
-
-        // Apply max scale constraint
-        if let Some(max_scale) = settings.max_scale {
-            new_scale = new_scale.min(max_scale);
-        }
-
-        // If there is both a min and max boundary, that limits how far we can zoom. Make sure we don't exceed that
-        let scale_constrained = BVec2::new(
-            settings.min_x.is_some() && settings.max_x.is_some(),
-            settings.min_y.is_some() && settings.max_y.is_some(),
-        );
-
-        if scale_constrained.x || scale_constrained.y {
-            let bounds_width = if let (Some(min_x), Some(max_x)) = (settings.min_x, settings.max_x)
-            {
-                max_x - min_x
-            } else {
-                f32::INFINITY
-            };
-
-            let bounds_height = if let (Some(min_y), Some(max_y)) = (settings.min_y, settings.max_y)
-            {
-                max_y - min_y
-            } else {
-                f32::INFINITY
-            };
-
-            let bounds_size = vec2(bounds_width, bounds_height);
-            let max_safe_scale = max_scale_within_bounds(bounds_size, &proj, window_size);
-
-            if scale_constrained.x {
-                new_scale = new_scale.min(max_safe_scale.x);
-            }
-
-            if scale_constrained.y {
-                new_scale = new_scale.min(max_safe_scale.y);
-            }
-        }
-
-        rig.driver_mut::<Position>().position.z = new_scale;
-        rig.driver_mut::<Arm>().offset.z = new_scale;
+        rig.driver_mut::<Position>().position.z *= 1. + -scroll * 0.001;
     }
 
     rig.update(time.delta_seconds());
 
-    camera_transform.translation.x = rig.final_transform.position.x;
-    camera_transform.translation.y = rig.final_transform.position.y;
     camera_transform.rotation = Quat::from_xyzw(
         rig.final_transform.rotation.v.x,
         rig.final_transform.rotation.v.y,
         rig.final_transform.rotation.v.z,
         rig.final_transform.rotation.s,
     );
+    camera_transform.translation.x = rig.final_transform.position.x;
+    camera_transform.translation.y = rig.final_transform.position.y;
     proj.scale = rig.final_transform.position.z;
+}
+
+fn keep_within_settings(
+    mut rig: ResMut<OgleRig>,
+    primary_window: Query<&Window, With<PrimaryWindow>>,
+    settings: Res<OgleSettings>,
+    mut query_cam: Query<(&mut OrthographicProjection, &mut Transform), With<Camera>>,
+) {
+    let Ok((mut proj, mut camera_transform)) = query_cam.get_single_mut() else {
+        return;
+    };
+
+    let window = primary_window.single();
+    let window_size = Vec2::new(window.width(), window.height());
+
+    // Apply scaling constraints
+    let (min_scale, max_scale) = (
+        settings.min_scale,
+        settings.max_scale.unwrap_or(f32::INFINITY),
+    );
+
+    // If there is both a min and max boundary, that limits how far we can zoom. Make sure we don't exceed that
+    let scale_constrained = BVec2::new(
+        settings.min_x.is_some() && settings.max_x.is_some(),
+        settings.min_y.is_some() && settings.max_y.is_some(),
+    );
+
+    if scale_constrained.x || scale_constrained.y {
+        let bounds_width = if let (Some(min_x), Some(max_x)) = (settings.min_x, settings.max_x) {
+            max_x - min_x
+        } else {
+            f32::INFINITY
+        };
+
+        let bounds_height = if let (Some(min_y), Some(max_y)) = (settings.min_y, settings.max_y) {
+            max_y - min_y
+        } else {
+            f32::INFINITY
+        };
+
+        let bounds_size = vec2(bounds_width, bounds_height);
+        let max_safe_scale = max_scale_within_bounds(bounds_size, &proj, window_size);
+
+        if scale_constrained.x {
+            proj.scale = proj.scale.min(max_safe_scale.x);
+        }
+        if scale_constrained.y {
+            proj.scale = proj.scale.min(max_safe_scale.y);
+        }
+    }
+    proj.scale = proj.scale.clamp(min_scale, max_scale);
+    rig.driver_mut::<Position>().position.z = proj.scale;
+
+    // Keep within bounds
+    let proj_size = proj.area.size();
+    let half_of_viewport = proj_size / 2.;
+    if let Some(min_x_bound) = settings.min_x {
+        let min_safe_cam_x = min_x_bound + half_of_viewport.x;
+        camera_transform.translation.x = camera_transform.translation.x.max(min_safe_cam_x);
+    }
+    if let Some(max_x_bound) = settings.max_x {
+        let max_safe_cam_x = max_x_bound - half_of_viewport.x;
+        camera_transform.translation.x = camera_transform.translation.x.min(max_safe_cam_x);
+    }
+    if let Some(min_y_bound) = settings.min_y {
+        let min_safe_cam_y = min_y_bound + half_of_viewport.y;
+        camera_transform.translation.y = camera_transform.translation.y.max(min_safe_cam_y);
+    }
+    if let Some(max_y_bound) = settings.max_y {
+        let max_safe_cam_y = max_y_bound - half_of_viewport.y;
+        camera_transform.translation.y = camera_transform.translation.y.min(max_safe_cam_y);
+    }
 }
 
 /// max_scale_within_bounds is used to find the maximum safe zoom out/projection

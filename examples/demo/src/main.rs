@@ -10,7 +10,15 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
-        .add_plugins(OglePlugin::default())
+        .add_plugins(OglePlugin {
+            initial_settings: OgleSettings {
+                min_x: Some(-500.0),
+                max_x: Some(500.0),
+                min_y: Some(-500.0),
+                max_y: Some(500.0),
+                ..default()
+            },
+        })
         .add_systems(Startup, setup_scene)
         .add_systems(Update, move_target)
         .add_systems(Update, control_camera_ui)
@@ -19,6 +27,16 @@ fn main() {
 
 fn setup_scene(mut commands: Commands) {
     // Background
+
+    commands.spawn(SpriteBundle {
+        sprite: Sprite {
+            color: css::ORANGE.into(),
+            custom_size: Some(Vec2::new(600.0, 600.0)),
+            ..default()
+        },
+        transform: Transform::from_xyz(0.0, 0.0, 0.),
+        ..default()
+    });
     commands.spawn(SpriteBundle {
         sprite: Sprite {
             color: css::LIME.into(),
@@ -62,12 +80,14 @@ fn control_camera_ui(
     target: Res<OgleTarget>,
     mode: Res<State<OgleMode>>,
     mut next_mode: ResMut<NextState<OgleMode>>,
+    proj: Query<&OrthographicProjection>,
 ) {
     let window = egui::Window::new("Camera Controls")
         .anchor(egui::Align2::LEFT_TOP, [25.0, 25.0])
         .resizable(false)
         .title_bar(true);
     window.show(contexts.ctx_mut(), |ui| {
+        ui.label(format!("Cameral scale: {}", proj.single().scale));
         ui.heading("Mode");
         let mut set_mode = mode.clone();
         if ui

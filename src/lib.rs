@@ -44,7 +44,6 @@ impl Default for OgleRig {
         Self(
             CameraRig::builder()
                 .with(Position::new(pos))
-                .with(Arm::new(pos))
                 .with(Smooth::new_position(1.5).predictive(false))
                 .build(),
         )

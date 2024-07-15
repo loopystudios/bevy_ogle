@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["examples/run_wasm", "examples/simple"]
+members = ["examples/run_wasm", "examples/demo"]
 
 [workspace.package]
 edition = "2021"
@@ -10,11 +10,11 @@ repository = "https://github.com/loopystudios/bevy_ogle"
 
 [package]
 name = "bevy_ogle"
+description = "A multi-mode camera library for 2d vector games"
 version.workspace = true
 license.workspace = true
 edition.workspace = true
 repository.workspace = true
-description = "A multi-mode camera library for 2d games"
 authors = ["Spencer C. Imbleau"]
 keywords = ["bevy"]
 categories = ["game-development", "wasm"]
