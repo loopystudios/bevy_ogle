@@ -117,6 +117,29 @@ fn control_camera_ui(
         }
         ui.horizontal(|ui| {
             let mut pos = match *target {
+                OgleTarget::EntityWithOffset((_, p)) => p,
+                _ => Vec2::new(0.0, 0.0),
+            };
+            if ui
+                .radio(
+                    matches!(*target, OgleTarget::EntityWithOffset(_)),
+                    "Entity Offset",
+                )
+                .clicked()
+            {
+                commands.ogle_target_entity_with_offset(target_entity, pos);
+            }
+            ui.label("X");
+            if ui.add(egui::DragValue::new(&mut pos.x)).changed() {
+                commands.ogle_target_entity_with_offset(target_entity, pos);
+            }
+            ui.label("Y");
+            if ui.add(egui::DragValue::new(&mut pos.y)).changed() {
+                commands.ogle_target_entity_with_offset(target_entity, pos);
+            }
+        });
+        ui.horizontal(|ui| {
+            let mut pos = match *target {
                 OgleTarget::Position(p) => p,
                 _ => Vec2::new(0.0, 0.0),
             };

@@ -11,6 +11,7 @@ pub use plugin::OglePlugin;
 pub enum OgleTarget {
     Position(Vec2),
     Entity(Entity),
+    EntityWithOffset((Entity, Vec2)),
     None,
 }
 

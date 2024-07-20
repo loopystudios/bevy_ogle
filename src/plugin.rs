@@ -112,6 +112,17 @@ fn follow_target(
                 error!("entity target has no transform");
             };
         }
+        OgleTarget::EntityWithOffset((e, offset)) => {
+            if let Ok(transform) = query_transform.get(e) {
+                rig.driver_mut::<Position>().position = mint::Point3 {
+                    x: transform.translation.x + offset.x,
+                    y: transform.translation.y + offset.y,
+                    z: prev_z,
+                };
+            } else {
+                error!("entity target has no transform");
+            };
+        }
         OgleTarget::None => {}
     }
 
