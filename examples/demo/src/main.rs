@@ -12,10 +12,10 @@ fn main() {
         .add_plugins(EguiPlugin)
         .add_plugins(OglePlugin {
             initial_settings: OgleSettings {
-                min_x: Some(-500.0),
-                max_x: Some(500.0),
-                min_y: Some(-500.0),
-                max_y: Some(500.0),
+                min_x: -500.0,
+                max_x: 500.0,
+                min_y: -500.0,
+                max_y: 500.0,
                 ..default()
             },
         })
@@ -28,37 +28,32 @@ fn main() {
 fn setup_scene(mut commands: Commands) {
     // Background
 
-    commands.spawn(SpriteBundle {
-        sprite: Sprite {
+    commands.spawn((
+        Sprite {
             color: css::ORANGE.into(),
             custom_size: Some(Vec2::new(600.0, 600.0)),
             ..default()
         },
-        transform: Transform::from_xyz(0.0, 0.0, 0.),
-        ..default()
-    });
-    commands.spawn(SpriteBundle {
-        sprite: Sprite {
+        Transform::from_xyz(0.0, 0.0, 1.0),
+    ));
+    commands.spawn((
+        Sprite {
             color: css::LIME.into(),
             custom_size: Some(Vec2::new(500.0, 500.0)),
             ..default()
         },
-        transform: Transform::from_xyz(0.0, 0.0, 0.),
-        ..default()
-    });
+        Transform::from_xyz(0.0, 0.0, 2.0),
+    ));
 
     // Moving thing for the camera to follow
     commands.spawn((
         ThingToFollow,
-        SpriteBundle {
-            sprite: Sprite {
-                color: css::RED.into(),
-                custom_size: Some(Vec2::new(5.0, 5.0)),
-                ..default()
-            },
-            transform: Transform::from_xyz(0.0, 0.0, 0.),
+        Sprite {
+            color: css::RED.into(),
+            custom_size: Some(Vec2::new(5.0, 5.0)),
             ..default()
         },
+        Transform::from_xyz(0.0, 0.0, 3.0),
     ));
 }
 
@@ -68,9 +63,9 @@ fn move_target(
     mut gizmos: Gizmos,
 ) {
     let mut transform = query_thing.single_mut();
-    transform.translation.x += time.delta_seconds() * (random::<f32>() * 500.0 - 500.0 / 2.0);
-    transform.translation.y += time.delta_seconds() * (random::<f32>() * 500.0 - 500.0 / 2.0);
-    gizmos.rect_2d(transform.translation.xy(), 0.0, (5.0, 5.0).into(), css::RED);
+    transform.translation.x += time.delta_secs() * (random::<f32>() * 500.0 - 500.0 / 2.0);
+    transform.translation.y += time.delta_secs() * (random::<f32>() * 500.0 - 500.0 / 2.0);
+    gizmos.rect_2d(transform.translation.xy(), (5.0, 5.0).into(), css::RED);
 }
 
 fn control_camera_ui(
