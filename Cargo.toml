@@ -30,6 +30,7 @@ bevy = { version = "0.15.3", default-features = false }
 bevy = { workspace = true, default-features = false, features = [
   "bevy_state",
   "bevy_core_pipeline",
+  "bevy_window",
 ] }
 dolly = "0.6.0"
 mint = "0.5.9"
