@@ -19,11 +19,11 @@ pub struct OgleCam {
 }
 
 impl OgleCam {
-    pub fn new(settings: OgleSettings) -> Self {
+    pub fn new(settings: OgleSettings, target: OgleTarget, mode: OgleMode) -> Self {
         Self {
             settings,
-            target: Default::default(),
-            mode: Default::default(),
+            target,
+            mode,
             rig: CameraRig::builder()
                 .with(Position::new(mint::Point3 {
                     x: 0.0,
@@ -33,6 +33,12 @@ impl OgleCam {
                 .with(Smooth::new_position(1.5).predictive(false))
                 .build(),
         }
+    }
+}
+
+impl Default for OgleCam {
+    fn default() -> Self {
+        Self::new(Default::default(), Default::default(), Default::default())
     }
 }
 
@@ -58,8 +64,68 @@ pub enum OgleMode {
     Pancam,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct OgleSettings {
+    /// Zoom sensitivity
+    pub zoom_sensitivity: f32,
+    /// Bounds for the camera
+    pub bounds: OgleBoundingSettings,
+    /// Settings for pancam mode
+    pub pancam: OglePancamSettings,
+}
+
+impl Default for OgleSettings {
+    fn default() -> Self {
+        Self {
+            zoom_sensitivity: 100.0,
+            bounds: Default::default(),
+            pancam: Default::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct OglePancamSettings {
+    /// Speed for mouse drag movement
+    pub drag_speed: f32,
+    /// Speed for keyboard movement
+    pub keyboard_speed: f32,
+    /// Mouse buttons for dragging the pancam
+    pub grab_buttons: Vec<MouseButton>,
+    /// Keyboard keys for panning up
+    pub up_keys: Vec<KeyCode>,
+    /// Keyboard keys for panning down
+    pub down_keys: Vec<KeyCode>,
+    /// Keyboard keys for panning left
+    pub left_keys: Vec<KeyCode>,
+    /// Keyboard keys for panning right
+    pub right_keys: Vec<KeyCode>,
+}
+
+impl Default for OglePancamSettings {
+    fn default() -> Self {
+        const GRAB_BUTTONS: [MouseButton; 3] =
+            [MouseButton::Left, MouseButton::Right, MouseButton::Middle];
+        const UP_KEYS: [KeyCode; 2] = [KeyCode::ArrowUp, KeyCode::KeyW];
+        const DOWN_KEYS: [KeyCode; 2] = [KeyCode::ArrowDown, KeyCode::KeyS];
+        const LEFT_KEYS: [KeyCode; 2] = [KeyCode::ArrowLeft, KeyCode::KeyA];
+        const RIGHT_KEYS: [KeyCode; 2] = [KeyCode::ArrowRight, KeyCode::KeyD];
+        Self {
+            drag_speed: 10.0,
+            keyboard_speed: 1000.0,
+            grab_buttons: GRAB_BUTTONS.to_vec(),
+            up_keys: UP_KEYS.to_vec(),
+            down_keys: DOWN_KEYS.to_vec(),
+            left_keys: LEFT_KEYS.to_vec(),
+            right_keys: RIGHT_KEYS.to_vec(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct OgleBoundingSettings {
+    /// Whether the camera MUST remain bounded to the safe area.
+    pub enabled: bool,
     /// The minimum scale for the camera
     pub min_scale: f32,
     /// The maximum scale for the camera
@@ -74,10 +140,11 @@ pub struct OgleSettings {
     pub max_y: f32,
 }
 
-impl Default for OgleSettings {
+impl Default for OgleBoundingSettings {
     fn default() -> Self {
         Self {
-            min_scale: -(1.0 - 0.00001),
+            enabled: false,
+            min_scale: 0.00001,
             max_scale: f32::INFINITY,
             min_x: f32::NEG_INFINITY,
             max_x: f32::INFINITY,
