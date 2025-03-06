@@ -4,13 +4,13 @@ members = ["examples/run_wasm", "examples/demo"]
 
 [workspace.package]
 edition = "2021"
-version = "0.2.0"
+version = "0.3.0"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/loopystudios/bevy_ogle"
 
 [package]
 name = "bevy_ogle"
-description = "A multi-mode camera library for 2d vector games"
+description = "A camera library for 2d vector games"
 version.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -24,16 +24,18 @@ readme = "README.md"
 
 
 [workspace.dependencies]
-bevy = { version = "0.14.0", default-features = false }
+bevy = { version = "0.15.3", default-features = false }
 
 [dependencies]
 bevy = { workspace = true, default-features = false, features = [
-  "bevy_state",
   "bevy_core_pipeline",
+  "bevy_window",
 ] }
-bevy_pancam = { version = "0.12.0", features = ["bevy_egui"] }
-dolly = "0.5.0"
+dolly = "0.6.0"
 mint = "0.5.9"
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.42"
+wasm-bindgen-test = "0.3.50"
+
+[features]
+default = []

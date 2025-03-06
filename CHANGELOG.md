@@ -10,6 +10,18 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.3.0
+
+### Added
+
+- `ZoomOnly` camera mode.
+- Opt in to camera bounding via settings.
+
+### Changed
+
+- Updated to Bevy 0.15
+- Commands were removed, you should query and adjust target, mode, etc. through the `OgleCam` directly, which is now a component.
+
 ## 0.2.0
 
 ### Added

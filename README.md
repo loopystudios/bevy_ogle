@@ -1,6 +1,3 @@
-> [!WARNING]
-> This is a work in progress and the README is a reflection of future work.
-
 <div align="center">
 
 # Bevy Ogle
@@ -27,7 +24,8 @@ cargo run -p demo
 
 |bevy|bevy_ogle|
 |---|---|
-|0.14|0.1-0.2, main|
+|0.15|0.3, main|
+|0.14|0.1-0.2|
 |< 0.13| unsupported |
 
 ## Usage
@@ -41,28 +39,6 @@ You can also run examples on web:
 rustup target add wasm32-unknown-unknown
 
 cargo run_wasm -p demo
-```
-
-### Camera Modes
-
-The camera currently supports 3 modes, easily switched through commands.
-
-```rust
-commands.ogle_mode(OgleMode::Frozen); // No camera system will be run. "User is in the menu"
-commands.ogle_mode(OgleMode::Follow); // Camera will follow a target.
-commands.ogle_mode(OgleMode::Pancam); // Camera is a debug camera controlled by the user.
-```
-
-### Camera Target
-
-Exclusively when the camera is in `OgleMode::Follow`, the camera will follow a target.
-
-There are several ways to set the target:
-
-```rust
-commands.ogle_clear_target(); // Clear the target - No following is observed.
-commands.ogle_target_position(Vec2::new(0.0, 0.0)); // Camera looks at a position target.
-commands.ogle_target_entity(target_entity); // Camera follows a target entity (must have a `Transform`).
 ```
 
 ## Community
