@@ -10,6 +10,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.4.0
+
+### Changed
+
+- `OgleCam` now requires `Camera2d` as a required component.
+
 ## 0.3.0
 
 ### Added
