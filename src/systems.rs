@@ -6,10 +6,7 @@ use bevy::{
 };
 use dolly::prelude::*;
 
-pub fn do_follow_target(
-    query_transform: Query<&Transform, Without<Camera>>,
-    mut query_cam: Query<&mut OgleCam, With<Camera>>,
-) {
+pub fn do_follow_target(query_transform: Query<&Transform>, mut query_cam: Query<&mut OgleCam>) {
     for mut cam in query_cam.iter_mut() {
         if cam.mode != OgleMode::Following {
             return;
@@ -49,7 +46,7 @@ pub fn do_follow_target(
 }
 
 pub fn do_camera_zooming(
-    mut query_cam: Query<&mut OgleCam, With<Camera>>,
+    mut query_cam: Query<&mut OgleCam>,
     mut scroll_events: EventReader<MouseWheel>,
 ) {
     for mut cam in query_cam.iter_mut() {
@@ -180,7 +177,7 @@ pub fn do_pancam_movement(
     *last_pos = Some(current_pos);
 }
 
-pub fn do_camera_bounding(mut query_cam: Query<&mut OgleCam, With<Camera>>) {
+pub fn do_camera_bounding(mut query_cam: Query<&mut OgleCam>) {
     for mut cam in query_cam.iter_mut() {
         if !cam.settings.bounds.enabled {
             return;
@@ -213,7 +210,7 @@ pub fn do_camera_bounding(mut query_cam: Query<&mut OgleCam, With<Camera>>) {
 
 pub fn commit_camera_changes(
     time: Res<Time>,
-    mut query_cam: Query<(&mut OgleCam, &mut OrthographicProjection, &mut Transform), With<Camera>>,
+    mut query_cam: Query<(&mut OgleCam, &mut OrthographicProjection, &mut Transform)>,
 ) {
     for (mut cam, mut proj, mut camera_transform) in query_cam.iter_mut() {
         // Apply final transform update

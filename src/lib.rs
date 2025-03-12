@@ -11,6 +11,7 @@ pub use plugin::OglePlugin;
 pub struct OgleSystemSet;
 
 #[derive(Component, Debug)]
+#[require(Camera2d)]
 pub struct OgleCam {
     pub settings: OgleSettings,
     pub target: OgleTarget,
