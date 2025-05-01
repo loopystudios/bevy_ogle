@@ -167,13 +167,8 @@ pub fn do_pancam_movement(
 
         // The proposed new camera position
         let new_pos = transform.translation.truncate() - delta;
-
-        let z = ogle_cam.rig.driver::<Position>().position.z;
-        ogle_cam.rig.driver_mut::<Position>().position = mint::Point3 {
-            x: new_pos.x,
-            y: new_pos.y,
-            z,
-        };
+        ogle_cam.rig.driver_mut::<Position>().position.x = new_pos.x;
+        ogle_cam.rig.driver_mut::<Position>().position.y = new_pos.y;
     }
     *last_pos = Some(current_pos);
 
