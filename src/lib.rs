@@ -87,8 +87,6 @@ impl Default for OgleSettings {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct OglePancamSettings {
-    /// Speed for mouse drag movement
-    pub drag_speed: f32,
     /// Speed for keyboard movement
     pub keyboard_speed: f32,
     /// Mouse buttons for dragging the pancam
@@ -112,7 +110,6 @@ impl Default for OglePancamSettings {
         const LEFT_KEYS: [KeyCode; 2] = [KeyCode::ArrowLeft, KeyCode::KeyA];
         const RIGHT_KEYS: [KeyCode; 2] = [KeyCode::ArrowRight, KeyCode::KeyD];
         Self {
-            drag_speed: 10.0,
             keyboard_speed: 1000.0,
             grab_buttons: GRAB_BUTTONS.to_vec(),
             up_keys: UP_KEYS.to_vec(),

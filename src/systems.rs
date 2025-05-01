@@ -99,6 +99,7 @@ pub fn do_pancam_movement(
             continue;
         };
         let proj_area_size = projection.area.size();
+        let viewport_size = camera.logical_viewport_size().unwrap_or(window_size);
 
         let mouse_delta = if !ogle_cam
             .settings
@@ -109,9 +110,7 @@ pub fn do_pancam_movement(
         {
             Vec2::ZERO
         } else {
-            let viewport_size = camera.logical_viewport_size().unwrap_or(window_size);
-            ogle_cam.settings.pancam.drag_speed * delta_device_pixels * proj_area_size
-                / viewport_size
+            delta_device_pixels * proj_area_size * projection.scale / viewport_size
         };
 
         // Keyboard delta
@@ -217,6 +216,11 @@ pub fn commit_camera_changes(
         };
         // Apply final transform update
         cam.rig.update(time.delta_secs());
+        if cam.mode == OgleMode::Pancam {
+            let driver_pos = cam.rig.driver::<Position>().position;
+            cam.rig.final_transform.position.x = driver_pos.x;
+            cam.rig.final_transform.position.y = driver_pos.y;
+        }
         camera_transform.translation = Vec3::new(
             cam.rig.final_transform.position.x,
             cam.rig.final_transform.position.y,

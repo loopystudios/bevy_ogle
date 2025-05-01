@@ -10,6 +10,10 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+### Changed
+
+- Removed `OglePancamSettings.drag_speed`, since mouse drag now mirrors the device projection drag.
+
 ## 0.5.0
 
 ### Changed
