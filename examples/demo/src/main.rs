@@ -1,5 +1,5 @@
 use bevy::{color::palettes::css, prelude::*};
-use bevy_egui::{egui, EguiContexts, EguiPlugin};
+use bevy_egui::{egui, EguiContextPass, EguiContexts, EguiPlugin};
 use bevy_ogle::{prelude::*, OgleBoundingSettings, OglePlugin};
 use rand::random;
 
@@ -9,12 +9,14 @@ struct ThingToFollow;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(EguiPlugin)
+        .add_plugins(EguiPlugin {
+            enable_multipass_for_primary_context: false,
+        })
         .add_plugins(OglePlugin)
         .insert_resource(ClearColor(css::BLACK.into()))
         .add_systems(Startup, setup_scene)
         .add_systems(Update, move_target)
-        .add_systems(Update, control_camera_ui)
+        .add_systems(EguiContextPass, control_camera_ui)
         .run();
 }
 
@@ -71,11 +73,12 @@ fn move_target(
     time: Res<Time>,
     mut query_thing: Query<&mut Transform, With<ThingToFollow>>,
     mut gizmos: Gizmos,
-) {
-    let mut transform = query_thing.single_mut();
+) -> Result {
+    let mut transform = query_thing.single_mut()?;
     transform.translation.x += time.delta_secs() * (random::<f32>() * 500.0 - 500.0 / 2.0);
     transform.translation.y += time.delta_secs() * (random::<f32>() * 500.0 - 500.0 / 2.0);
     gizmos.rect_2d(transform.translation.xy(), (5.0, 5.0).into(), css::RED);
+    Ok(())
 }
 
 fn control_camera_ui(

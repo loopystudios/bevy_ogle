@@ -4,7 +4,7 @@ members = ["examples/run_wasm", "examples/demo"]
 
 [workspace.package]
 edition = "2021"
-version = "0.4.0"
+version = "0.5.0"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/loopystudios/bevy_ogle"
 
@@ -24,7 +24,7 @@ readme = "README.md"
 
 
 [workspace.dependencies]
-bevy = { version = "0.15.3", default-features = false }
+bevy = { version = "0.16.0", default-features = false }
 
 [dependencies]
 bevy = { workspace = true, default-features = false, features = [

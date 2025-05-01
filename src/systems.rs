@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use crate::{OgleCam, OgleMode, OgleTarget};
 use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
@@ -74,25 +76,18 @@ pub fn do_pancam_movement(
     primary_window: Query<&Window, With<PrimaryWindow>>,
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     keyboard_buttons: Res<ButtonInput<KeyCode>>,
-    mut query_cam: Query<(
-        &mut OgleCam,
-        &Camera,
-        &mut Transform,
-        &OrthographicProjection,
-    )>,
+    mut query_cam: Query<(&mut OgleCam, &Camera, &mut Transform, &Projection)>,
     mut last_pos: Local<Option<Vec2>>,
     time: Res<Time>,
-) {
-    let Ok(window) = primary_window.get_single() else {
-        return;
-    };
+) -> Result {
+    let window = primary_window.single()?;
     let window_size = window.size();
 
     // Use position instead of MouseMotion, otherwise we don't get acceleration
     // movement
     let current_pos = match window.cursor_position() {
         Some(c) => Vec2::new(c.x, -c.y),
-        None => return,
+        None => return Ok(()),
     };
     let delta_device_pixels = current_pos - last_pos.unwrap_or(current_pos);
 
@@ -100,7 +95,10 @@ pub fn do_pancam_movement(
         if ogle_cam.mode != OgleMode::Pancam {
             continue;
         }
-
+        let Projection::Orthographic(projection) = projection else {
+            warn!("OgleCam attached to a non-orthographic projection");
+            continue;
+        };
         let proj_area_size = projection.area.size();
 
         let mouse_delta = if !ogle_cam
@@ -175,6 +173,8 @@ pub fn do_pancam_movement(
         ogle_cam.rig.driver_mut::<Position>().position.y = new_pos.y;
     }
     *last_pos = Some(current_pos);
+
+    Ok(())
 }
 
 pub fn do_camera_bounding(mut query_cam: Query<&mut OgleCam>) {
@@ -210,9 +210,12 @@ pub fn do_camera_bounding(mut query_cam: Query<&mut OgleCam>) {
 
 pub fn commit_camera_changes(
     time: Res<Time>,
-    mut query_cam: Query<(&mut OgleCam, &mut OrthographicProjection, &mut Transform)>,
+    mut query_cam: Query<(&mut OgleCam, &mut Projection, &mut Transform)>,
 ) {
-    for (mut cam, mut proj, mut camera_transform) in query_cam.iter_mut() {
+    for (mut cam, mut projection, mut camera_transform) in query_cam.iter_mut() {
+        let Projection::Orthographic(ref mut projection) = projection.deref_mut() else {
+            continue;
+        };
         // Apply final transform update
         cam.rig.update(time.delta_secs());
         camera_transform.translation = Vec3::new(
@@ -220,6 +223,6 @@ pub fn commit_camera_changes(
             cam.rig.final_transform.position.y,
             camera_transform.translation.z,
         );
-        proj.scale = cam.rig.final_transform.position.z;
+        projection.scale = cam.rig.final_transform.position.z;
     }
 }

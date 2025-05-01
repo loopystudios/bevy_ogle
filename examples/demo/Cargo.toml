@@ -10,5 +10,5 @@ publish = false
 [dependencies]
 bevy = { workspace = true, default-features = true }
 bevy_ogle = { path = "../.." }
-bevy_egui = "0.32.0"
-rand = "0.8.5"
+bevy_egui = "0.34.1"
+rand = "0.9.1"
