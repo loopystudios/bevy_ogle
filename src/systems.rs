@@ -96,7 +96,6 @@ pub fn do_pancam_movement(
             continue;
         }
         let Projection::Orthographic(projection) = projection else {
-            warn!("OgleCam attached to a non-orthographic projection");
             continue;
         };
         let proj_area_size = projection.area.size();
