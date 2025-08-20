@@ -24,10 +24,10 @@ fn setup_scene(mut commands: Commands) {
         OgleSettings {
             bounds: OgleBoundingSettings {
                 enabled: true,
-                min_x: -500.0,
-                max_x: 500.0,
-                min_y: -500.0,
-                max_y: 500.0,
+                min_x: -250.0,
+                max_x: 250.0,
+                min_y: -250.0,
+                max_y: 250.0,
                 min_scale: 0.5,
                 max_scale: 2.5,
             },
