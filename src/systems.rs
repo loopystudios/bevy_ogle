@@ -79,15 +79,17 @@ pub fn do_pancam_movement(
     mut query_cam: Query<(&mut OgleCam, &Camera, &mut Transform, &Projection)>,
     mut last_pos: Local<Option<Vec2>>,
     time: Res<Time>,
-) -> Result {
-    let window = primary_window.single()?;
+) {
+    let Ok(window) = primary_window.single() else {
+        return;
+    };
     let window_size = window.size();
 
     // Use position instead of MouseMotion, otherwise we don't get acceleration
     // movement
     let current_pos = match window.cursor_position() {
         Some(c) => Vec2::new(c.x, -c.y),
-        None => return Ok(()),
+        None => return,
     };
     let delta_device_pixels = current_pos - last_pos.unwrap_or(current_pos);
 
@@ -171,8 +173,6 @@ pub fn do_pancam_movement(
         ogle_cam.rig.driver_mut::<Position>().position.y = new_pos.y;
     }
     *last_pos = Some(current_pos);
-
-    Ok(())
 }
 
 pub fn do_camera_bounding(mut query_cam: Query<&mut OgleCam>) {
