@@ -1,5 +1,5 @@
 use bevy::{color::palettes::css, prelude::*};
-use bevy_egui::{egui, EguiContextPass, EguiContexts, EguiPlugin};
+use bevy_egui::{egui, EguiContexts, EguiPlugin, EguiPrimaryContextPass};
 use bevy_ogle::{prelude::*, OgleBoundingSettings, OglePlugin};
 use rand::random;
 
@@ -9,14 +9,12 @@ struct ThingToFollow;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(EguiPlugin {
-            enable_multipass_for_primary_context: false,
-        })
+        .add_plugins(EguiPlugin::default())
         .add_plugins(OglePlugin)
         .insert_resource(ClearColor(css::BLACK.into()))
         .add_systems(Startup, setup_scene)
         .add_systems(Update, move_target)
-        .add_systems(EguiContextPass, control_camera_ui)
+        .add_systems(EguiPrimaryContextPass, control_camera_ui)
         .run();
 }
 
@@ -85,12 +83,12 @@ fn control_camera_ui(
     mut contexts: EguiContexts,
     thing: Single<Entity, With<ThingToFollow>>,
     mut cam: Single<&mut OgleCam>,
-) {
+) -> Result {
     let window = egui::Window::new("Camera Controls")
         .anchor(egui::Align2::LEFT_TOP, [25.0, 25.0])
         .resizable(false)
         .title_bar(true);
-    window.show(contexts.ctx_mut(), |ui| {
+    window.show(contexts.ctx_mut()?, |ui| {
         let cam = &mut cam;
         ui.heading("Bounds");
         ui.checkbox(&mut cam.settings.bounds.enabled, "Bounded");
@@ -155,4 +153,6 @@ fn control_camera_ui(
             }
         });
     });
+
+    Ok(())
 }
