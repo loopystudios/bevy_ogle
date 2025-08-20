@@ -10,6 +10,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.6.3
+
+### Fixed
+
+- Camera bounding is now correctly tight.
+
 ## 0.6.2
 
 ### Fixed

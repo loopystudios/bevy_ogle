@@ -171,15 +171,47 @@ pub fn do_pancam_movement(
     }
     *last_pos = Some(current_pos);
 }
+pub fn do_camera_bounding(
+    primary_window: Query<&Window, With<PrimaryWindow>>,
+    mut query_cam: Query<(&mut OgleCam, &Camera, &Projection)>,
+) {
+    let Ok(window) = primary_window.single() else {
+        return;
+    };
+    let window_size = window.size();
 
-pub fn do_camera_bounding(mut query_cam: Query<&mut OgleCam>) {
-    for mut cam in query_cam.iter_mut() {
+    for (mut cam, camera, projection) in query_cam.iter_mut() {
         if !cam.settings.bounds.enabled {
-            return;
+            continue;
         }
 
+        let Projection::Orthographic(_projection) = projection else {
+            continue;
+        };
+
+        // Calculate the bounds area size
+        let bounds_width = cam.settings.bounds.max_x - cam.settings.bounds.min_x;
+        let bounds_height = cam.settings.bounds.max_y - cam.settings.bounds.min_y;
+
+        // Get viewport size in pixels
+        let viewport_size = camera.logical_viewport_size().unwrap_or(window_size);
+
+        // Calculate what scale would be needed to fit the bounds area exactly in the viewport
+        let scale_to_fit_width = bounds_width / viewport_size.x;
+        let scale_to_fit_height = bounds_height / viewport_size.y;
+        // Use min instead of max to fill the viewport (may crop bounds)
+        let scale_to_fit_bounds = scale_to_fit_width.min(scale_to_fit_height);
+
+        // The maximum allowed scale (most zoomed out) should not exceed what's needed to fit bounds
+        // But we also respect the user's min/max scale settings
+        let max_allowed_scale = cam.settings.bounds.max_scale.min(scale_to_fit_bounds);
+
+        // Ensure we have a valid range - if scale_to_fit_bounds is smaller than min_scale,
+        // we prioritize the bounds constraint over the user's min_scale
+        let effective_min_scale = cam.settings.bounds.min_scale.min(scale_to_fit_bounds);
+        let scale_range = effective_min_scale..=max_allowed_scale;
+
         // Bound the zoom
-        let scale_range = cam.settings.bounds.min_scale..=cam.settings.bounds.max_scale;
         cam.rig.driver_mut::<Position>().position.z = cam
             .rig
             .driver::<Position>()
@@ -187,19 +219,50 @@ pub fn do_camera_bounding(mut query_cam: Query<&mut OgleCam>) {
             .z
             .clamp(*scale_range.start(), *scale_range.end());
 
-        // Bound position
-        cam.rig.driver_mut::<Position>().position.x = cam
-            .rig
-            .driver::<Position>()
-            .position
-            .x
-            .clamp(cam.settings.bounds.min_x, cam.settings.bounds.max_x);
-        cam.rig.driver_mut::<Position>().position.y = cam
-            .rig
-            .driver::<Position>()
-            .position
-            .y
-            .clamp(cam.settings.bounds.min_y, cam.settings.bounds.max_y);
+        // Get the current scale after clamping
+        let current_scale = cam.rig.driver::<Position>().position.z;
+
+        // Calculate viewport size in world units
+        let world_viewport_width = viewport_size.x * current_scale;
+        let world_viewport_height = viewport_size.y * current_scale;
+
+        // Calculate half sizes for easier math
+        let half_width = world_viewport_width * 0.5;
+        let half_height = world_viewport_height * 0.5;
+
+        // Calculate the bounds for the camera center position
+        // The camera center must stay within these bounds to keep the entire viewport within the target area
+        let effective_min_x = cam.settings.bounds.min_x + half_width;
+        let effective_max_x = cam.settings.bounds.max_x - half_width;
+        let effective_min_y = cam.settings.bounds.min_y + half_height;
+        let effective_max_y = cam.settings.bounds.max_y - half_height;
+
+        // Only apply bounds if they make sense (i.e., the bounded area is larger than the viewport)
+        if effective_min_x <= effective_max_x {
+            cam.rig.driver_mut::<Position>().position.x = cam
+                .rig
+                .driver::<Position>()
+                .position
+                .x
+                .clamp(effective_min_x, effective_max_x);
+        } else {
+            // If bounds are too tight, center the camera
+            let bounds_center_x = (cam.settings.bounds.min_x + cam.settings.bounds.max_x) * 0.5;
+            cam.rig.driver_mut::<Position>().position.x = bounds_center_x;
+        }
+
+        if effective_min_y <= effective_max_y {
+            cam.rig.driver_mut::<Position>().position.y = cam
+                .rig
+                .driver::<Position>()
+                .position
+                .y
+                .clamp(effective_min_y, effective_max_y);
+        } else {
+            // If bounds are too tight, center the camera
+            let bounds_center_y = (cam.settings.bounds.min_y + cam.settings.bounds.max_y) * 0.5;
+            cam.rig.driver_mut::<Position>().position.y = bounds_center_y;
+        }
     }
 }
 
