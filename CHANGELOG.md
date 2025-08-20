@@ -10,6 +10,18 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.6.2
+
+### Fixed
+
+- Window drag in pancam mode should now be 1 pixel per pixel dragged.
+
+## 0.6.1
+
+### Fixed
+
+- A panic that occurs when the window is `None`.
+
 ## 0.6.0
 
 ### Changed

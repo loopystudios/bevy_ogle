@@ -76,14 +76,13 @@ pub fn do_pancam_movement(
     primary_window: Query<&Window, With<PrimaryWindow>>,
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     keyboard_buttons: Res<ButtonInput<KeyCode>>,
-    mut query_cam: Query<(&mut OgleCam, &Camera, &mut Transform, &Projection)>,
+    mut query_cam: Query<(&mut OgleCam, &mut Transform, &Projection)>,
     mut last_pos: Local<Option<Vec2>>,
     time: Res<Time>,
 ) {
     let Ok(window) = primary_window.single() else {
         return;
     };
-    let window_size = window.size();
 
     // Use position instead of MouseMotion, otherwise we don't get acceleration
     // movement
@@ -93,15 +92,13 @@ pub fn do_pancam_movement(
     };
     let delta_device_pixels = current_pos - last_pos.unwrap_or(current_pos);
 
-    for (mut ogle_cam, camera, transform, projection) in query_cam.iter_mut() {
+    for (mut ogle_cam, transform, projection) in query_cam.iter_mut() {
         if ogle_cam.mode != OgleMode::Pancam {
             continue;
         }
         let Projection::Orthographic(projection) = projection else {
             continue;
         };
-        let proj_area_size = projection.area.size();
-        let viewport_size = camera.logical_viewport_size().unwrap_or(window_size);
 
         let mouse_delta = if !ogle_cam
             .settings
@@ -112,7 +109,7 @@ pub fn do_pancam_movement(
         {
             Vec2::ZERO
         } else {
-            delta_device_pixels * proj_area_size * projection.scale / viewport_size
+            delta_device_pixels * projection.scale
         };
 
         // Keyboard delta
