@@ -85,7 +85,6 @@ fn control_camera_ui(
     mut cam: Single<&mut OgleCam>,
 ) -> Result {
     let window = egui::Window::new("Camera Controls")
-        .anchor(egui::Align2::LEFT_TOP, [25.0, 25.0])
         .resizable(false)
         .title_bar(true);
     window.show(contexts.ctx_mut()?, |ui| {
