@@ -78,17 +78,15 @@ fn move_target(
     gizmos.rect_2d(transform.translation.xy(), (5.0, 5.0).into(), css::RED);
     Ok(())
 }
-
 fn control_camera_ui(
     mut contexts: EguiContexts,
-    thing: Single<Entity, With<ThingToFollow>>,
+    thing: Single<(Entity, &Transform), With<ThingToFollow>>,
     mut cam: Single<&mut OgleCam>,
 ) -> Result {
     let window = egui::Window::new("Camera Controls")
         .resizable(false)
         .title_bar(true);
     window.show(contexts.ctx_mut()?, |ui| {
-        let cam = &mut cam;
         ui.heading("Bounds");
         ui.checkbox(&mut cam.settings.bounds.enabled, "Bounded");
         ui.heading("Mode");
@@ -99,7 +97,7 @@ fn control_camera_ui(
         ui.radio_value(&mut cam.mode, OgleMode::Pancam, "Pancam");
         ui.separator();
         ui.heading("Camera Target");
-        let target_entity = *thing;
+        let (target_entity, target_transform) = *thing;
         if ui.radio(cam.target == OgleTarget::None, "None").clicked() {
             cam.target = OgleTarget::None;
         }
@@ -152,6 +150,43 @@ fn control_camera_ui(
                 cam.target = OgleTarget::Position(pos);
             }
         });
+
+        ui.separator();
+
+        // Teleport testing
+        ui.heading("Teleport");
+        let current_position = cam.position();
+        ui.horizontal(|ui| {
+            if ui.button("Teleport to Origin").clicked() {
+                cam.teleport(Vec3::new(0.0, 0.0, current_position.z));
+            }
+            if ui.button("Teleport to Target").clicked() {
+                cam.teleport(Vec3::new(
+                    target_transform.translation.x,
+                    target_transform.translation.y,
+                    current_position.z,
+                ));
+            }
+        });
+        ui.horizontal(|ui| {
+            if ui.button("Zoom to 0.5x").clicked() {
+                cam.teleport(Vec3::new(current_position.x, current_position.y, 0.5));
+            }
+            if ui.button("Zoom to 1.0x").clicked() {
+                cam.teleport(Vec3::new(current_position.x, current_position.y, 1.0));
+            }
+            if ui.button("Zoom to 2.0x").clicked() {
+                cam.teleport(Vec3::new(current_position.x, current_position.y, 2.0));
+            }
+        });
+
+        if ui.button("Random").clicked() {
+            use rand::random;
+            let random_x = (random::<f32>() - 0.5) * 400.0; // -200 to 200
+            let random_y = (random::<f32>() - 0.5) * 400.0; // -200 to 200
+            let random_zoom = 0.5 + random::<f32>() * 2.0; // 0.5 to 2.5
+            cam.teleport(Vec3::new(random_x, random_y, random_zoom));
+        }
     });
 
     Ok(())

@@ -43,6 +43,30 @@ impl Default for OgleCam {
     }
 }
 
+impl OgleCam {
+    /// Get the current position of the camera rig
+    pub fn position(&self) -> Vec3 {
+        let position = self.rig.driver::<Position>().position;
+        Vec3 {
+            x: position.x,
+            y: position.y,
+            z: position.z,
+        }
+    }
+
+    /// Instantly teleport the camera to a new position.
+    pub fn teleport(&mut self, position: Vec3) {
+        self.rig = CameraRig::builder()
+            .with(Position::new(mint::Point3 {
+                x: position.x,
+                y: position.y,
+                z: position.z,
+            }))
+            .with(Smooth::new_position(1.5).predictive(false))
+            .build();
+    }
+}
+
 #[derive(Clone, PartialEq, Debug, Default)]
 pub enum OgleTarget {
     Position(Vec2),

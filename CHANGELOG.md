@@ -13,6 +13,8 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 ### Added
 
 - Added new `OgleMode::MoveOnly`
+- Added `OgleCam::teleport(&mut self)` to allow teleporting of the camera immediately.
+- Added `OgleCam::position(&self)` to retrieve the current camera position easily.
 
 ### Changed
 
