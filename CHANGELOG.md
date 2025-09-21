@@ -10,6 +10,8 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.7.0
+
 ### Added
 
 - Added new `OgleMode::MoveOnly`

@@ -24,7 +24,7 @@ cargo run -p demo
 
 |bevy|bevy_ogle|
 |---|---|
-|0.16|0.5-0.6, main|
+|0.16|0.5-0.7, main|
 |0.15|0.3-0.4|
 |0.14|0.1-0.2|
 |< 0.13| unsupported |
