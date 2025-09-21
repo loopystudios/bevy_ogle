@@ -10,7 +10,7 @@ use dolly::prelude::*;
 
 pub fn do_follow_target(query_transform: Query<&Transform>, mut query_cam: Query<&mut OgleCam>) {
     for mut cam in query_cam.iter_mut() {
-        if cam.mode != OgleMode::Following {
+        if !matches!(cam.mode, OgleMode::Normal | OgleMode::MoveOnly) {
             return;
         }
 
@@ -53,8 +53,8 @@ pub fn do_camera_zooming(
 ) {
     for mut cam in query_cam.iter_mut() {
         match cam.mode {
-            OgleMode::Pancam | OgleMode::Following | OgleMode::ZoomOnly => {}
-            OgleMode::Frozen => return,
+            OgleMode::Pancam | OgleMode::Normal | OgleMode::ZoomOnly => {}
+            OgleMode::Frozen | OgleMode::MoveOnly => return,
         };
 
         // Zoom handling

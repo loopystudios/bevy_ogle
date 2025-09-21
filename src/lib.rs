@@ -54,13 +54,15 @@ pub enum OgleTarget {
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Default)]
 pub enum OgleMode {
-    /// The camera will not move under normal circumstances.
+    /// The camera will not respond to user input.
     #[default]
     Frozen,
-    /// The user can only zoom the camera.
+    /// The camera can zoom, but movement is disabled.
     ZoomOnly,
-    /// The camera should exponentially follow its target.
-    Following,
+    /// The camera can move, but zoom is disabled.
+    MoveOnly,
+    /// The camera should move and zoom normally.
+    Normal,
     /// The camera is in a detached pancam mode.
     Pancam,
 }

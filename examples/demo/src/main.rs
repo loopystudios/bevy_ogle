@@ -95,7 +95,8 @@ fn control_camera_ui(
         ui.heading("Mode");
         ui.radio_value(&mut cam.mode, OgleMode::Frozen, "Frozen");
         ui.radio_value(&mut cam.mode, OgleMode::ZoomOnly, "Zoom Only");
-        ui.radio_value(&mut cam.mode, OgleMode::Following, "Following");
+        ui.radio_value(&mut cam.mode, OgleMode::MoveOnly, "Move Only");
+        ui.radio_value(&mut cam.mode, OgleMode::Normal, "Normal");
         ui.radio_value(&mut cam.mode, OgleMode::Pancam, "Pancam");
         ui.separator();
         ui.heading("Camera Target");
