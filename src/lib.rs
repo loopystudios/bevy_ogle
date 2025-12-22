@@ -11,7 +11,10 @@ mod egui_support;
 
 /// System sets of the camera
 #[derive(Debug, Clone, Copy, SystemSet, PartialEq, Eq, Hash)]
-pub struct OgleSystems;
+pub enum OgleSystems {
+    Input,
+    Commit,
+}
 
 #[derive(Component, Debug)]
 #[require(Camera2d)]

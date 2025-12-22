@@ -10,6 +10,16 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.9.0
+
+### Changed
+
+- Split `OgleSystems` into `OgleSystems::Input` and `OgleSystems::Commit`.
+
+### Fixed
+
+- Camera changes made programatically are now committed even over egui hovers.
+
 ## 0.8.0
 
 ### Added

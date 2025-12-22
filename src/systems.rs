@@ -172,7 +172,7 @@ pub fn do_pancam_movement(
     *last_pos = Some(current_pos);
 }
 
-pub fn do_camera_bounding(
+pub fn restrict_to_camera_bounding(
     primary_window: Query<&Window, With<PrimaryWindow>>,
     mut query_cam: Query<(&mut OgleCam, &Camera, &Projection)>,
 ) {

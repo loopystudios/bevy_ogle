@@ -13,7 +13,7 @@ impl Plugin for EguiPanCamPlugin {
             .add_systems(PostUpdate, check_egui_wants_focus)
             .configure_sets(
                 Update,
-                OgleSystems.run_if(resource_equals(EguiWantsFocus(false))),
+                OgleSystems::Input.run_if(resource_equals(EguiWantsFocus(false))),
             );
     }
 }
@@ -30,7 +30,7 @@ fn check_egui_wants_focus(
         let ctx = contexts_0_38.iter_mut().next();
         if let Some(ctx) = ctx {
             let ctx = ctx.into_inner().get_mut();
-            if ctx.wants_keyboard_input() || ctx.is_using_pointer() {
+            if ctx.wants_keyboard_input() || ctx.wants_pointer_input() {
                 new_wants_focus = true;
             }
         }
