@@ -19,6 +19,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 ### Changed
 
 - Updated to bevy 0.17
+- Renamed `OgleSystemSet` to `OgleSystems`
 
 ## 0.7.0
 
