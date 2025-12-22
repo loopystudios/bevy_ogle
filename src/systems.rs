@@ -49,7 +49,7 @@ pub fn do_follow_target(query_transform: Query<&Transform>, mut query_cam: Query
 
 pub fn do_camera_zooming(
     mut query_cam: Query<&mut OgleCam>,
-    mut scroll_events: EventReader<MouseWheel>,
+    mut scroll_events: MessageReader<MouseWheel>,
 ) {
     for mut cam in query_cam.iter_mut() {
         match cam.mode {

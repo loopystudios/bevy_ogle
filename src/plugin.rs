@@ -1,4 +1,4 @@
-use crate::{systems, OgleSystemSet};
+use crate::{systems, OgleSystems};
 use bevy::prelude::*;
 
 #[derive(Default)]
@@ -16,7 +16,10 @@ impl Plugin for OglePlugin {
                 systems::commit_camera_changes,
             )
                 .chain()
-                .in_set(OgleSystemSet),
+                .in_set(OgleSystems),
         );
+
+        #[cfg(feature = "internal_bevy_egui")]
+        app.add_plugins(crate::egui_support::EguiPanCamPlugin);
     }
 }

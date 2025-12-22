@@ -6,9 +6,12 @@ mod systems;
 mod plugin;
 pub use plugin::OglePlugin;
 
-/// System set to allow ordering of `OglePlugin`
+#[cfg(feature = "internal_bevy_egui")]
+mod egui_support;
+
+/// System sets of the camera
 #[derive(Debug, Clone, Copy, SystemSet, PartialEq, Eq, Hash)]
-pub struct OgleSystemSet;
+pub struct OgleSystems;
 
 #[derive(Component, Debug)]
 #[require(Camera2d)]

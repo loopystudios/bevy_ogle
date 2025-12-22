@@ -10,6 +10,16 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.8.0
+
+### Added
+
+- Egui support with the `bevy_egui_0_38` feature. This will make inputs ignored during egui focus.
+
+### Changed
+
+- Updated to bevy 0.17
+
 ## 0.7.0
 
 ### Added
