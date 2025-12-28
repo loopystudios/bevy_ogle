@@ -6,25 +6,33 @@ pub struct OglePlugin;
 
 impl Plugin for OglePlugin {
     fn build(&self, app: &mut App) {
-        app.configure_sets(Update, (OgleSystems::Input, OgleSystems::Commit).chain());
-        app.add_systems(
+        app.configure_sets(
             Update,
             (
-                systems::do_follow_target,
-                systems::do_camera_zooming,
-                systems::do_pancam_movement,
+                OgleSystems::Update,
+                OgleSystems::Input,
+                OgleSystems::Correction,
+                OgleSystems::Commit,
             )
+                .chain(),
+        );
+        app.add_systems(
+            Update,
+            systems::do_follow_target.in_set(OgleSystems::Update),
+        )
+        .add_systems(
+            Update,
+            (systems::do_camera_zooming, systems::do_pancam_movement)
                 .chain()
                 .in_set(OgleSystems::Input),
         )
         .add_systems(
             Update,
-            (
-                systems::restrict_to_camera_bounding,
-                systems::commit_camera_changes,
-            )
-                .chain()
-                .in_set(OgleSystems::Commit),
+            systems::correct_to_camera_bounding.in_set(OgleSystems::Correction),
+        )
+        .add_systems(
+            Update,
+            systems::commit_camera_changes.in_set(OgleSystems::Commit),
         );
 
         #[cfg(feature = "internal_bevy_egui")]

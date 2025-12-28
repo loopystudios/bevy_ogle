@@ -10,6 +10,16 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.10.0
+
+### Changed
+
+- Added `OgleSystems::Input` and `OgleSystems::Correction` for finer control.
+
+### Fixed
+
+- Camera following will still happen during egui focus.
+
 ## 0.9.0
 
 ### Changed
