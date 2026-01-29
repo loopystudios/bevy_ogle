@@ -10,6 +10,10 @@ Added, Changed, Deprecated, Removed, Fixed, Security.
 
 - This release supports **Bevy 0.18**.
 
+## [0.11.0] - 2026-01-28
+
+- This release supports **Bevy 0.18**.
+
 ## [0.10.0]
 
 - This release supports **Bevy 0.17**.
