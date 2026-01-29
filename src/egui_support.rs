@@ -20,14 +20,14 @@ impl Plugin for EguiPanCamPlugin {
 
 // todo: make run condition when Bevy supports mutable resources in them
 fn check_egui_wants_focus(
-    #[cfg(feature = "bevy_egui_0_38")] mut contexts_0_38: Query<&mut bevy_egui_0_38::EguiContext>,
+    #[cfg(feature = "bevy_egui_0_39")] mut contexts_0_39: Query<&mut bevy_egui_0_39::EguiContext>,
     mut wants_focus: ResMut<EguiWantsFocus>,
 ) {
     let mut new_wants_focus = false;
 
-    #[cfg(feature = "bevy_egui_0_38")]
+    #[cfg(feature = "bevy_egui_0_39")]
     {
-        let ctx = contexts_0_38.iter_mut().next();
+        let ctx = contexts_0_39.iter_mut().next();
         if let Some(ctx) = ctx {
             let ctx = ctx.into_inner().get_mut();
             if ctx.wants_keyboard_input() || ctx.wants_pointer_input() {
